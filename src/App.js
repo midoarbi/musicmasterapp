@@ -1,26 +1,45 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React,{Component} from 'react';
+import Artist from  './components/Artist';
+import Tracks from './components/Tracks';
+import Search from './components/Search';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+const API_ADRESS = 'https://spotify-api-wrapper.appspot.com';
+
+
+class App extends Component   {
+
+  state = {artist: null, tracks: []}
+
+  
+  searchArtist = artistQuery =>
+  {
+    fetch(`${API_ADRESS}/artist/${artistQuery}`)
+    .then(Response => Response.json())
+    .then(json => {
+     if(json.artists.total>0)
+     {
+       const artist = json.artists.items[0];
+       this.setState({artist});
+
+       fetch(`${API_ADRESS}/artist/${artist.id}/top-tracks`)
+       .then(Response => Response.json())
+       .then(json => this.setState({tracks: json.tracks}))
+       .catch(error => alert(error.message));
+     }
+    } )
+    .catch(error => alert(error.message));
+  }
+ 
+  render(){
+    return (
+      <div className='app'>
+      <h2>Music Master</h2>
+      <Search searchArtist={this.searchArtist}  />
+      <Artist artist={this.state.artist} />
+      <Tracks tracks={this.state.tracks} />
+      </div>
+    );
+  }
 }
 
 export default App;
